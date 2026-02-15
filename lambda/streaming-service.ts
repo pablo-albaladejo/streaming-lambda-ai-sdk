@@ -1,5 +1,6 @@
 import { bedrock } from '@ai-sdk/amazon-bedrock';
-import { Output, streamText } from 'ai';
+import { Output, streamText, wrapLanguageModel } from 'ai';
+import type { LanguageModelMiddleware } from 'ai';
 import { z } from 'zod';
 
 const responseSchema = z.object({
@@ -15,8 +16,17 @@ type StreamParams = {
 
 type OnError = (event: { error: unknown }) => void;
 
-export const streamingService = (params: StreamParams, onError: OnError) => {
-  const model = bedrock('anthropic.claude-3-5-sonnet-20241022-v2:0');
+export const streamingService = (
+  params: StreamParams,
+  onError: OnError,
+  middlewares: Array<LanguageModelMiddleware>,
+) => {
+  const baseModel = bedrock('anthropic.claude-3-5-sonnet-20241022-v2:0');
+
+  const model = wrapLanguageModel({
+    model: baseModel,
+    middleware: middlewares,
+  });
 
   return streamText({
     model,
