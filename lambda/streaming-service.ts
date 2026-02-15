@@ -7,11 +7,15 @@ const responseSchema = z.object({
   keywords: z.array(z.string()).describe('Relevant keywords'),
 });
 
+const TIMEOUT_MS = 30_000;
+
 type StreamParams = {
   prompt: string;
 };
 
-export const streamingService = (params: StreamParams) => {
+type OnError = (event: { error: unknown }) => void;
+
+export const streamingService = (params: StreamParams, onError: OnError) => {
   const model = bedrock('anthropic.claude-3-5-sonnet-20241022-v2:0');
 
   return streamText({
@@ -22,5 +26,7 @@ export const streamingService = (params: StreamParams) => {
       'You are a helpful assistant. Respond with a structured JSON object containing a summary and keywords about the topic the user asks about.',
     maxOutputTokens: 2000,
     temperature: 0.7,
+    abortSignal: AbortSignal.timeout(TIMEOUT_MS),
+    onError,
   });
 };
