@@ -1,0 +1,8 @@
+node_modules/
+package-lock.json
+cdk.out/
+*.js
+!vitest.config.ts
+*.d.ts
+*.js.map
+.env
